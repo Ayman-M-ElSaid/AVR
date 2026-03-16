@@ -19,8 +19,5 @@ void lcd_data(LCD *lcd,unsigned char data);
 void lcd_clear(LCD *lcd);
 void lcd_print(LCD *lcd,char *string);
 void lcd_goto(LCD *lcd, uint8_t row, uint8_t col);
-void set(LCD *lcd, uint8_t pin);
-void clear(LCD *lcd, uint8_t pin);
-void pulse(LCD *lcd, uint8_t pin);
 
 #endif
