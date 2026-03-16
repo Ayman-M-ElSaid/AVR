@@ -1,5 +1,9 @@
 #include "lcd.h"
 
+static void set(LCD *lcd, uint8_t pin);
+static void clear(LCD *lcd, uint8_t pin);
+static void pulse(LCD *lcd, uint8_t pin);
+
 void lcd_init_4bit(LCD *lcd, char port_name)
 {
     switch (port_name)
@@ -27,16 +31,15 @@ void lcd_init_4bit(LCD *lcd, char port_name)
     *(lcd->ddr) = 0xFF;
     lcd->E = 2;
     lcd->RS = 3;
-    _delay_ms(30);
-    // Function Set
-    lcd_command(lcd, 0x20);
-    lcd_command(lcd, 0x20);
+    _delay_ms(50);
+
+    lcd_command(lcd, 0x33);
+    lcd_command(lcd, 0x32);
     lcd_command(lcd, 0x28);
-    // Display
-    lcd_command(lcd, 0x0C);
+    lcd_command(lcd, 0x08);
     lcd_clear(lcd);
-    // Entry Mode Set
     lcd_command(lcd, 0x06);
+    lcd_command(lcd, 0x0C);
 }
 
 void lcd_command(LCD *lcd, unsigned char cmd)
@@ -49,7 +52,7 @@ void lcd_command(LCD *lcd, unsigned char cmd)
     *(lcd->port) = (*(lcd->port) & 0x0F) | (cmd << 4);
     pulse(lcd, lcd->E);
 
-    _delay_ms(5);
+    _delay_ms(1);
 }
 
 void lcd_data(LCD *lcd, unsigned char data)
@@ -62,7 +65,7 @@ void lcd_data(LCD *lcd, unsigned char data)
     *(lcd->port) = (*(lcd->port) & 0x0F) | (data << 4);
     pulse(lcd, lcd->E);
 
-    _delay_ms(5);
+    _delay_ms(1);
 }
 
 void lcd_clear(LCD *lcd)
@@ -85,20 +88,20 @@ void lcd_goto(LCD *lcd, uint8_t row, uint8_t col)
     lcd_command(lcd, 0x80 | address);
 }
 
-void set(LCD *lcd, uint8_t pin)
+static void set(LCD *lcd, uint8_t pin)
 {
     *(lcd->port) |= (1 << pin);
 }
 
-void clear(LCD *lcd, uint8_t pin)
+static void clear(LCD *lcd, uint8_t pin)
 {
     *(lcd->port) &= ~(1 << pin);
 }
 
-void pulse(LCD *lcd, uint8_t pin)
+static void pulse(LCD *lcd, uint8_t pin)
 {
     set(lcd, pin);
-    _delay_ms(5);
+    _delay_us(1);
     clear(lcd, pin);
-    _delay_ms(5);
+    _delay_us(50);
 }
