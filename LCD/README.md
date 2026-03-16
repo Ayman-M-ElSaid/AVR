@@ -7,8 +7,8 @@ The entire port configuration is resolved at runtime via a single `char` port na
 
 ## Demo
 
-https://github.com/Ayman-M-ElSaid/LCD/raw/main/Simulation.mp4
-
+[https://github.com/Ayman-M-ElSaid/LCD/raw/main/Simulation.mp4
+](https://github.com/user-attachments/assets/4f25705f-32dc-4303-a0b9-793ef32a9b25)
 > Simulated in Proteus on an ATmega32. The demo scrolls **"Eid Mubarak!"** across both rows of a 16×2 LCD.
 
 ---
