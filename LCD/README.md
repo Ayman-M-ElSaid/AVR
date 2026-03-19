@@ -1,24 +1,32 @@
-# HD44780 LCD Driver — AVR (4-bit mode)
+# HD44780 LCD Driver — AVR
 
-A lightweight, struct-based HD44780 LCD driver for AVR microcontrollers, written in C.  
-The entire port configuration is resolved at runtime via a single `char` port name — no hardcoded registers in your application code.
+A lightweight, struct-based HD44780 LCD driver for AVR microcontrollers, written in C.
+Supports both **4-bit parallel** and **I2C** (via PCF8574) interfaces through a unified API —
+the same `lcd_print()`, `lcd_goto()`, and `lcd_clear()` calls work regardless of which mode you use.
 
 ---
 
 ## Demo
 
+### 4-bit Mode — Scrolling Text
 [https://github.com/Ayman-M-ElSaid/LCD/raw/main/Simulation.mp4](https://github.com/user-attachments/assets/4f25705f-32dc-4303-a0b9-793ef32a9b25)
-> Simulated in Proteus on an ATmega32. The demo scrolls **"Eid Mubarak!"** across both rows of a 16×2 LCD.
+> ATmega32 driving a 16×2 LCD in 4-bit parallel mode. Scrolls "Eid Mubarak!" across both rows.
+
+### I2C Mode — PCF8574 Schematic
+<img width="1573" height="1436" alt="Image" src="https://github.com/user-attachments/assets/204cc496-e3d4-47a0-b25d-cddeb9ebb7d2" />
+> ATmega32 driving a 16×2 LCD through a PCF8574 I2C I/O expander.
+> Pull-up resistors (4.7kΩ) on SDA and SCL. A0–A2 tied to VCC sets the PCF8574 address to `0x27`.
 
 ---
 
 ## Features
 
-- 4-bit interface mode — only 4 data lines required
-- Single-call initialization: just pass the port name (`'A'`–`'D'`)
-- Struct-based design — all port/pin state lives in the `LCD` struct
-- Full upper nibble + lower nibble transfer with enable pulse
-- Cursor positioning by row and column
+- **4-bit parallel mode** — uses a full AVR port, no external hardware
+- **I2C mode** — drives the LCD via a PCF8574 expander over just 2 wires (SDA + SCL)
+- **Unified API** — `lcd_print()`, `lcd_goto()`, `lcd_clear()` work for both modes
+- Single-call initialization for both modes
+- Struct-based design — all state lives in the `LCD` struct, no globals
+- Multiple I2C LCDs supported simultaneously (each with a unique PCF8574 address)
 
 ---
 
@@ -26,49 +34,85 @@ The entire port configuration is resolved at runtime via a single `char` port na
 
 ```
 LCD/
-├── lcd.h               # Driver interface & LCD struct definition
-├── lcd.c               # Driver implementation
-├── main.c              # Demo / usage example
-├── Simulation.pdsprj   # Proteus simulation project
-└── Simulation.mp4      # Simulation output video
+├── lcd.h               # Driver interface & LCD struct
+├── lcd.c               # Driver implementation (4-bit + I2C)
+└── main.c              # Demo / usage example
 ```
 
 ---
 
-## Pin Mapping
+## 4-bit Mode
 
-The driver assumes **a full port** is dedicated to the LCD, wired as follows:
+### Pin Mapping
 
-| Port Pin | LCD Pin         |
-|----------|-----------------|
-| Pin 2    | E (Enable)      |
-| Pin 3    | RS (Reg. Select)|
-| Pin 4–7  | D4–D7 (data bus)|
+The driver assumes a **full AVR port** is dedicated to the LCD:
 
-> Pins 0 and 1 are unused by the driver but are driven as outputs since the full DDR is set to `0xFF`.
+| Port Pin | LCD Signal        |
+|----------|-------------------|
+| Pin 2    | E (Enable)        |
+| Pin 3    | RS (Reg. Select)  |
+| Pin 4–7  | D4–D7 (data bus)  |
+| Pin 0–1  | Unused (output)   |
+
+### Initialization
+
+```c
+LCD lcd;
+lcd_init_4bit(&lcd, 'A');   // 'A', 'B', 'C', or 'D'
+```
 
 ---
 
-## API
+## I2C Mode (PCF8574)
+
+Drives the LCD over I2C using a PCF8574 I/O expander — only 2 wires needed (SDA + SCL).
+
+### Wiring
+
+- Connect **SDA** → PC1, **SCL** → PC0 on the ATmega32
+- Add **4.7kΩ pull-up resistors** on both SDA and SCL to VCC
+- The I2C address depends on A0–A2 pin states on the PCF8574:
+
+| A2 | A1 | A0 | Address |
+|----|----|----|---------|
+| 0  | 0  | 0  | `0x20`  |
+| 0  | 0  | 1  | `0x21`  |
+| 1  | 1  | 1  | `0x27`  |
+
+### Initialization
 
 ```c
-// Initialize the LCD on the given AVR port ('A', 'B', 'C', or 'D')
-void lcd_init_4bit(LCD *lcd, char port_name);
+LCD lcd;
+lcd_init_I2C(&lcd, 0x27);   // pass the PCF8574 I2C address
+```
 
-// Send a command byte to the LCD
-void lcd_command(LCD *lcd, unsigned char cmd);
+> Multiple I2C LCDs can be used simultaneously by declaring separate `LCD` structs, each initialized with a different address.
 
-// Send a single data byte (character) to the LCD
-void lcd_data(LCD *lcd, unsigned char data);
+---
 
-// Clear the display (also delays 2ms for the LCD to settle)
+## Unified API
+
+Once initialized, all three functions work identically for both modes:
+
+```c
+// Clear the display
 void lcd_clear(LCD *lcd);
 
 // Print a null-terminated string at the current cursor position
 void lcd_print(LCD *lcd, char *string);
 
-// Move the cursor to a specific row (0 or 1) and column (0–15)
+// Move cursor to row (0–1) and column (0–15)
 void lcd_goto(LCD *lcd, uint8_t row, uint8_t col);
+```
+
+### Low-level API
+
+```c
+// 4-bit: send a command or data byte
+void lcd_write(LCD *lcd, bool is_data, uint8_t byte);
+
+// I2C: send a command or data byte over I2C
+void lcd_I2C_write(LCD *lcd, bool is_data, uint8_t byte);
 ```
 
 ---
@@ -81,7 +125,7 @@ void lcd_goto(LCD *lcd, uint8_t row, uint8_t col);
 int main(void)
 {
     LCD lcd;
-    lcd_init_4bit(&lcd, 'A');   // Use PORTA
+    lcd_init_I2C(&lcd, 0x27);   // or lcd_init_4bit(&lcd, 'A')
 
     lcd_goto(&lcd, 0, 0);
     lcd_print(&lcd, "Hello,");
@@ -95,55 +139,39 @@ int main(void)
 
 ---
 
-## How It Works
+## Initialization Sequence
 
-### Initialization
+Both modes run the same standard HD44780 startup sequence:
 
-`lcd_init_4bit()` resolves the port and DDR pointers from the `port_name` argument, sets the full port as output, then runs the standard HD44780 4-bit initialization sequence:
-
-```
-0x33 → 0x32  (force 4-bit mode)
-0x28         (2-line, 5×8 font)
-0x08         (display off)
-0x01         (clear display)
-0x06         (entry mode: increment cursor)
-0x0C         (display on, cursor off)
-```
-
-### Data Transfer
-
-Each byte is sent in two nibbles — upper first, then lower — each followed by an enable pulse:
-
-```c
-*(lcd->port) = (*(lcd->port) & 0x0F) | (cmd & 0xF0);  // upper nibble
-pulse(lcd, lcd->E);
-
-*(lcd->port) = (*(lcd->port) & 0x0F) | (cmd << 4);    // lower nibble
-pulse(lcd, lcd->E);
-```
-
-The lower 4 bits of the port (including E and RS on pins 2–3) are preserved with the `0x0F` mask.
+| Command          | Description                       |
+|------------------|-----------------------------------|
+| `0x33` → `0x32`  | Force 4-bit mode                  |
+| `0x28`           | 2-line display, 5×8 font          |
+| `0x08`           | Display off                       |
+| `0x01`           | Clear display                     |
+| `0x06`           | Entry mode: increment, no shift   |
+| `0x0C`           | Display on, cursor off, blink off |
 
 ---
 
 ## Requirements
 
 - AVR-GCC toolchain
-- AVR microcontroller (developed and tested on ATmega32)
-- Proteus 8+ (optional, for simulation)
+- ATmega32 (or compatible AVR)
+- PCF8574 I/O expander *(I2C mode only)*
+- Proteus 8+ *(optional, for simulation)*
 
 ---
 
 ## Roadmap
 
-- [x] 4-bit mode
-- [ ] 8-bit mode
+- [x] 4-bit parallel mode
+- [x] I2C mode (PCF8574)
+- [ ] 8-bit parallel mode
 - [ ] Custom character support (CGRAM)
-- [ ] I2C adapter support (PCF8574)
 
 ---
 
 ## License
 
 MIT
-
