@@ -13,7 +13,7 @@ the same `lcd_print()`, `lcd_goto()`, and `lcd_clear()` calls work regardless of
 > ATmega32 driving a 16×2 LCD in 4-bit parallel mode. Scrolls "Eid Mubarak!" across both rows.
 
 ### I2C Mode — PCF8574 Schematic
-<img width="1573" height="1436" alt="Image" src="https://github.com/user-attachments/assets/204cc496-e3d4-47a0-b25d-cddeb9ebb7d2" />
+<img width="1572" height="858" alt="Image" src="https://github.com/user-attachments/assets/b99bf7b2-c385-43be-bf45-5f980422b6ba" />
 > ATmega32 driving a 16×2 LCD through a PCF8574 I2C I/O expander.
 > Pull-up resistors (4.7kΩ) on SDA and SCL. A0–A2 tied to VCC sets the PCF8574 address to `0x27`.
 
