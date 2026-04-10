@@ -19,7 +19,7 @@ A basic calculator running on ATmega32, using the keypad for input and the HD447
 
 ## Demo
 
-[https://github.com/user-attachments/assets/e79fa459-f2bd-45b3-a9d6-1ee34b430070]
+(https://github.com/user-attachments/assets/e79fa459-f2bd-45b3-a9d6-1ee34b430070)
 
 ---
 
