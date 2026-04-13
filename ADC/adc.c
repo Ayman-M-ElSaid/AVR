@@ -6,11 +6,10 @@ void adc_init()
     ADCSRA = (1 << ADEN) | (1 << ADPS0) | (1 << ADPS1);
 
     ADCSRA |= (1 << ADSC);
-    while (ADCSRA & (1 << ADSC))
-        ;
+    while (ADCSRA & (1 << ADSC));
 }
 
-void set_prescaler(uint8_t prescaler)
+void adc_set_prescaler(uint8_t prescaler)
 {
     bool PS0, PS1, PS2;
     switch (prescaler)
@@ -49,8 +48,7 @@ uint16_t adc_read(uint8_t pin)
 
     ADMUX = (ADMUX & 0b11100000) | pin;
     ADCSRA |= (1 << ADSC);
-    while (ADCSRA & (1 << ADSC))
-        ;
+    while (ADCSRA & (1 << ADSC));
 
     return ADC;
 }
