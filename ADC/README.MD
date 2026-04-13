@@ -1,6 +1,6 @@
 # AVR ADC Driver
 
-A lightweight ADC driver for AVR microcontrollers (ATmega series). Provides simple blocking reads from any ADC channel with AVcc as the reference voltage.
+A lightweight ADC driver for AVR microcontrollers (ATmega series). Provides simple blocking reads from any ADC channel with AVcc as the reference voltage and optional runtime prescaler control.
 
 ## Files
 
@@ -16,11 +16,33 @@ A lightweight ADC driver for AVR microcontrollers (ATmega series). Provides simp
 Initializes the ADC peripheral.
 
 - Reference voltage: **AVcc** (REFS0 = 1)
-- Prescaler: **8** (ADPS0 + ADPS1) — suited for 1 MHz clock (ADC clock = 125 kHz, within the 50–200 kHz recommended range)
-- Sets PORTA as input (DDRA = 0)
+- Default prescaler: **8** (ADPS0 + ADPS1) — suited for 1 MHz clock (ADC clock = 125 kHz, within the recommended 50–200 kHz range)
 - Enables the ADC (ADEN = 1)
+- Performs a dummy conversion to warm up the sample-and-hold capacitor, ensuring the first real read is accurate
 
-Call once before any `adc_read()` calls.
+Call once before any `adc_read()` or `set_prescaler()` calls.
+
+---
+
+### `void set_prescaler(uint8_t prescaler)`
+
+Changes the ADC clock prescaler at runtime. Call after `adc_init()` when running at a clock speed other than 1 MHz.
+
+| `prescaler` | ADC clock @ 1 MHz | ADC clock @ 8 MHz | ADC clock @ 16 MHz |
+|-------------|-------------------|-------------------|--------------------|
+| 2           | 500 kHz ⚠️        | —                 | —                  |
+| 4           | 250 kHz ⚠️        | 2 MHz ⚠️          | —                  |
+| 8           | **125 kHz** ✅    | 1 MHz ⚠️          | —                  |
+| 16          | —                 | **500 kHz** ✅    | 1 MHz ⚠️           |
+| 32          | —                 | **250 kHz** ✅    | 500 kHz ✅         |
+| 64          | —                 | **125 kHz** ✅    | 250 kHz ✅         |
+| 128         | —                 | —                 | **125 kHz** ✅     |
+
+> ✅ Within recommended range (50–200 kHz for full 10-bit accuracy). ⚠️ Out of range — reduced accuracy.
+
+Invalid prescaler values (anything not in the table) are silently ignored.
+
+---
 
 ### `uint16_t adc_read(uint8_t pin)`
 
@@ -32,9 +54,14 @@ Reads a single 10-bit ADC conversion from the specified channel.
 
 **Returns:** Raw 10-bit result (0–1023).
 
-Blocks until the conversion is complete (polling ADSC).
+- Configures only the selected pin as input (`DDRA &= ~(1 << pin)`), leaving other PORTA pins untouched
+- Blocks until the conversion is complete (polling ADSC)
+
+---
 
 ## Usage Example
+
+The following displays a live voltage reading (e.g. `2.347V`) on a 16×2 I2C LCD using ADC channel 0.
 
 ```c
 #include "adc.h"
@@ -65,23 +92,13 @@ int main()
 }
 ```
 
-This displays a live voltage reading (e.g. `2.347V`) on a 16×2 I2C LCD using ADC channel 0.
-
 ## Hardware Notes
 
 - Tested on **ATmega32** @ 1 MHz internal RC oscillator
 - ADC input pins are **PA0–PA7**
-- Connect the signal to the appropriate `PA` pin
-- Ensure **AVCC is connected to VCC** (with a 100nF bypass capacitor to GND) for accurate readings; a floating AVCC produces unstable results
-- The prescaler of 8 is correct for 1 MHz. If you run at a higher clock speed, increase the prescaler accordingly:
-
-| F_CPU | Prescaler | ADPS bits |
-|-------|-----------|-----------|
-| 1 MHz | 8 | ADPS1, ADPS0 |
-| 8 MHz | 64 | ADPS2, ADPS1 |
-| 16 MHz | 128 | ADPS2, ADPS1, ADPS0 |
+- Ensure **AVCC is connected to VCC** with a 100 nF bypass capacitor to GND — a floating AVCC produces unstable results
 
 ## Dependencies
 
 - `avr/io.h` (avr-libc)
-- No other dependencies
+- `stdbool.h`
