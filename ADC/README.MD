@@ -24,7 +24,7 @@ Call once before any `adc_read()` or `set_prescaler()` calls.
 
 ---
 
-### `void set_prescaler(uint8_t prescaler)`
+### `void adc_set_prescaler(uint8_t prescaler)`
 
 Changes the ADC clock prescaler at runtime. Call after `adc_init()` when running at a clock speed other than 1 MHz.
 
@@ -75,6 +75,8 @@ int main()
 
     lcd_init_I2C(&lcd, 0x27);
     adc_init();
+    // adc_set_prescaler(64);   // uncomment if running at 8 MHz
+
     lcd_print(&lcd, "Voltage: ");
     while (1)
     {
