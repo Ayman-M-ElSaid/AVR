@@ -9,11 +9,11 @@ the same `lcd_print()`, `lcd_goto()`, and `lcd_clear()` calls work regardless of
 ## Demo
 
 ### 4-bit Mode — Scrolling Text
-[https://github.com/Ayman-M-ElSaid/AVR/raw/main/LCD/Simulation.mp4](https://github.com/user-attachments/assets/919d8163-aae2-41aa-9e5d-a75db4431b21))
+[https://github.com/Ayman-M-ElSaid/AVR/raw/main/LCD/Simulation.mp4](https://github.com/user-attachments/assets/919d8163-aae2-41aa-9e5d-a75db4431b21)
 > ATmega32 driving a 16×2 LCD in 4-bit parallel mode. Scrolls "Eid Mubarak!" across both rows.
 
 ### I2C Mode — PCF8574 Schematic
-<img width="1572" height="858" alt="Image" src="https://github.com/user-attachments/assets/b99bf7b2-c385-43be-bf45-5f980422b6ba" />
+<img width="1714" height="901" alt="Image" src="https://github.com/user-attachments/assets/5dd8bd99-72c0-4180-8731-9903dba71a10" />
 > ATmega32 driving a 16×2 LCD through a PCF8574 I2C I/O expander.
 > Pull-up resistors (4.7kΩ) on SDA and SCL. A0–A2 tied to VCC sets the PCF8574 address to `0x27`.
 
