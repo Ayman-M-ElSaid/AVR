@@ -25,12 +25,12 @@ AVR/
 | Driver | Description | Docs |
 |--------|-------------|------|
 | [`ADC/`](./ADC) | Blocking single-channel ADC reads with AVcc reference and runtime-configurable prescaler | [README](./ADC/README.MD) |
-| [`DHT11/`](./DHT11) | Bit-banged single-wire driver for the DHT11 temperature/humidity sensor | — |
+| [`DHT11/`](./DHT11) | Bit-banged single-wire driver for the DHT11 temperature/humidity sensor | [README](./DHT11/README.md) |
 | [`Keypad/`](./Keypad) | Struct-based scanner for 4×4 matrix keypads, returns ASCII key codes | [README](./Keypad/README.md) |
 | [`LCD/`](./LCD) | HD44780 character LCD driver — 4-bit parallel and I2C (PCF8574) modes behind one unified API | [README](./LCD/README.md) |
-| [`OLED/`](./OLED) | SSD1306 128×64 I2C OLED driver — text, per-page clearing, and PROGMEM bitmap rendering | — |
+| [`OLED/`](./OLED) | SSD1306 128×64 I2C OLED driver — text, per-page clearing, and PROGMEM bitmap rendering | [README](./OLED/README.md) |
 
-> Each driver folder is self-contained: a `.h`/`.c` pair (plus a demo `main.c`) that can be dropped into any project.
+> Each driver folder is self-contained: a `.h`/`.c` pair (plus a demo `main.c` for LCD) that can be dropped into any project.
 
 ---
 
