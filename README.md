@@ -8,8 +8,8 @@ A collection of peripheral drivers and full embedded projects for the **ATmega32
 
 ```
 AVR/
-├── ADC/                  # ADC driver
-├── DHT11/                # DHT11 temperature/humidity driver
+├── ADC/                   # ADC driver
+├── DHT11/                 # DHT11 temperature/humidity driver
 ├── Keypad/                # 4x4 matrix keypad driver
 ├── LCD/                   # HD44780 LCD driver (4-bit + I2C)
 ├── OLED/                  # SSD1306 OLED driver
@@ -30,7 +30,7 @@ AVR/
 | [`LCD/`](./LCD) | HD44780 character LCD driver — 4-bit parallel and I2C (PCF8574) modes behind one unified API | [README](./LCD/README.md) |
 | [`OLED/`](./OLED) | SSD1306 128×64 I2C OLED driver — text, per-page clearing, and PROGMEM bitmap rendering | [README](./OLED/README.md) |
 
-> Each driver folder is self-contained: a `.h`/`.c` pair (plus a demo `main.c` for LCD) that can be dropped into any project.
+> Each driver folder is self-contained: a `.h`/`.c` pair (plus a demo `main.c`) that can be dropped into any project.
 
 ---
 
