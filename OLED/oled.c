@@ -253,24 +253,19 @@ void oled_clear_page(OLED *oled, uint8_t page)
 
 void oled_draw_bitmap(OLED *oled, uint8_t page, uint8_t col, uint8_t width, uint8_t height, const uint8_t *bitmap)
 {
-    /* Use page addressing mode — set position explicitly for each row.
-     * This avoids relying on the horizontal-mode window auto-wrap,
-     * which can silently fail if the mode switch hasn't taken effect. */
+    
     oled_command(oled, 0x20);
-    oled_command(oled, 0x02); /* page addressing mode */
+    oled_command(oled, 0x02); 
     uint8_t height_pages=height/8;
     for (uint8_t p = 0; p < height_pages; p++) {
         uint8_t current_page = page + p;
         uint8_t current_col  = col;
 
-        /* Set page address */
         oled_command(oled, 0xB0 | current_page);
 
-        /* Set column address — split into low and high nibble */
         oled_command(oled, 0x00 | (current_col & 0x0F));
         oled_command(oled, 0x10 | ((current_col >> 4) & 0x0F));
 
-        /* Stream one page-row of bitmap bytes */
         for (uint8_t c = 0; c < width; c++) {
             oled_send_data(oled, pgm_read_byte(&bitmap[p * width + c]));
         }
